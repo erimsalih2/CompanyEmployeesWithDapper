@@ -1,4 +1,5 @@
 ﻿using Contracts;
+using Entities.Models;
 using Service.Contracts;
 using System;
 using System.Collections.Generic;
@@ -17,5 +18,11 @@ namespace Service
             _repository = repository;
             _logger = logger;
         }
+        public async Task<IEnumerable<Company>> GetAllCompanies()
+        {
+            var companies = await _repository.Company.GetAllCompanies();
+            return companies;
+        }
+
     }
 }
