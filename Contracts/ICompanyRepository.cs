@@ -18,6 +18,9 @@ namespace Contracts
         Task<IEnumerable<CompanyDto>> GetByIds(IEnumerable<Guid> ids);
         Task<IEnumerable<CompanyDto>> CreateCompanyCollection
         (IEnumerable<CompanyForCreationDto> companies);
+        Task DeleteCompany(Guid id);
+        Task UpsertCompany(Guid id, CompanyForUpdateDto company);
+        Task<CompanyDto> GetCompanyByEmployeeId(Guid employeeId);
     }
 
 }

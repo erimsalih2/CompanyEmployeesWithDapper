@@ -55,5 +55,31 @@ public class CompaniesController : ControllerBase
         .CreateCompanyCollection(companyCollection);
         return CreatedAtRoute("CompanyCollection",
         new { result.ids }, result.companies);
-    }
+
+    }    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteEmployeeForCompany(Guid companyId, Guid id)
+    {
+        await _service.EmployeeService.DeleteEmployeeForCompany(companyId, id);
+        return NoContent();
+    }    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteCompany(Guid id)
+    {
+        await _service.CompanyService.DeleteCompany(id);
+        return NoContent();
+    }    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateCompany(Guid id, [FromBody] CompanyForUpdateDto
+    company)
+    {
+        if (company is null)
+            return BadRequest("CompanyForUpdateDto object is null");
+        await _service.CompanyService.UpdateCompany(id, company);
+        return NoContent();
+    }    [HttpGet("byemployeeid/{id:guid}")]
+    public async Task<IActionResult> GetCompanyByEmployeeId(Guid id)
+
+
+    {
+        var company = await _service.CompanyService.GetCompanyByEmployeeId(id);
+        return Ok(company);
+    }
 }

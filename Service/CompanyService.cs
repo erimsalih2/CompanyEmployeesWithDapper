@@ -63,6 +63,29 @@ namespace Service
             var ids = string.Join(",", companies.Select(c => c.CompanyId));
             return (companies, ids);
         }
+        public async Task DeleteCompany(Guid companyId)
+        {
+            var company = await _repository.Company.GetCompany(companyId);
+            if (company is null)
+                throw new CompanyNotFoundException(companyId);
+            await _repository.Company.DeleteCompany(companyId);
+        }
+        public async Task UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate)
+        {
+            var companyEntity = await _repository.Company.GetCompany(companyId);
+            if (companyEntity is null)
+                throw new CompanyNotFoundException(companyId);
+            if (companyForUpdate.Employees is not null && companyForUpdate.Employees.Any())
+            {
+                await _repository.Company.UpsertCompany(companyId, companyForUpdate);
+            }
+        }
+        public async Task<CompanyDto> GetCompanyByEmployeeId(Guid employeeId)
+        {
+            var company = await _repository.Company.GetCompanyByEmployeeId(employeeId);
+            return company;
+        }
+
 
     }
 }

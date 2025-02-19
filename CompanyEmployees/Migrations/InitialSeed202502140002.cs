@@ -3,7 +3,7 @@ using FluentMigrator;
 
 namespace CompanyEmployees.Migrations
 {
-    [Migration(202501140001)]
+    [Migration(202501140002)]
     public class InitialSeed202502140002:Migration
     {
         public override void Up()

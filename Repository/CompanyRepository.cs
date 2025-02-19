@@ -5,6 +5,7 @@ using Repository.Queries;
 using Shared.DataTransferObjects;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -80,6 +81,28 @@ namespace Repository
                 return companies.ToList();
             }
         }
+        public async Task<CompanyDto> CreateCompanyWithEmployees(CompanyForCreationDto
+        company)
+        {
+            var query = CompanyQuery.InsertCompanyQuery;
+            var param = new DynamicParameters(company);
+            using (var connection = _context.CreateConnection())
+            {
+                connection.Open();
+                using (var trans = connection.BeginTransaction())
+                {
+                    var id = await connection
+                    .QuerySingleAsync<Guid>(query, param, transaction: trans);
+                    var queryEmp = EmployeeQuery.InsertEmployeeNoOutputQuery;
+                    var empList = company.Employees
+                    .Select(e => new { e.Name, e.Age, e.Position, id });
+                    await connection.ExecuteAsync(queryEmp, empList, transaction: trans);
+                    trans.Commit();
+                    return new CompanyDto(id, company.Name,
+                    string.Join(", ", company.Address, company.Country));
+                }
+            }
+        }
         public async Task<IEnumerable<CompanyDto>> CreateCompanyCollection
          (IEnumerable<CompanyForCreationDto> companies)
         {
@@ -105,6 +128,47 @@ namespace Repository
                 }
             }
         }
+        public async Task DeleteCompany(Guid id)
+        {
+            var query = CompanyQuery.DeleteCompanyQuery;
+            using (var connection = _context.CreateConnection())
+            {
+                await connection.ExecuteAsync(query, new { id });
+            }
+        }
+        public async Task UpsertCompany(Guid id, CompanyForUpdateDto company)
+        {
+            var query = CompanyQuery.UpdateCompanyQuery;
+            var param = new DynamicParameters(company);
+            param.Add("id", id, DbType.Guid);
+            using (var connection = _context.CreateConnection())
+            {
+                connection.Open();
+                using (var trans = connection.BeginTransaction())
+                {
+                    await connection.ExecuteAsync(query, param, transaction: trans);
+                    var queryEmp = EmployeeQuery.InsertEmployeeNoOutputQuery;
+                    var empList = company.Employees
+                    .Select(e => new { e.Name, e.Age, e.Position, id });
+                    await connection.ExecuteAsync(queryEmp, empList, transaction: trans);
+                    trans.Commit();
+                }
+            }
+        }
+        //Stored Procedure
+        public async Task<CompanyDto> GetCompanyByEmployeeId(Guid employeeId)
+        {
+            var procName = "ShowCompanyByEmployeeId";
+            using (var connection = _context.CreateConnection())
+            {
+                var company = await connection
+                .QueryFirstOrDefaultAsync<CompanyDto>(procName,
+                new { id = employeeId }, commandType: CommandType.StoredProcedure);
+                return company;
+            }
+        }
+
+
 
     }
 }
